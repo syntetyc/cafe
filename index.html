@@ -34,6 +34,7 @@
         }
         a {
             color: black;
+            text-decoration: none;
         }
         .icon-button {
             background: none;
@@ -44,17 +45,56 @@
             margin-left: 10px;
             vertical-align: middle;
         }
+        .horario-container {
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 0px;
+            cursor: pointer;
+            height: 35px;
+            width: 90%;
+        }
+        .horario-container .material-icons {
+            margin-right: 10px;
+        }
         .horario-completo {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
             opacity: 0;
-            margin-top: 10px;
+            margin-top: 5px; /* Distancia más pequeña entre los botones */
             font-size: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
         }
         .horario-completo.mostrar {
             max-height: 500px;
             opacity: 1;
+        }
+        .mapa-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 86%;
+            background: none;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: black; /* Color del texto y el icono a negro */
+            padding: 8px 15px;
+            border-radius: 100px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 3px; /* Ajuste de distancia más pequeña entre los botones */
+            height: 25px;
+        }
+        .mapa-button .material-icons {
+            margin-right: 10px;
+        }
+        .mapa-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
@@ -121,20 +161,21 @@
                 div.className = `cafe ${estadoClase}`;
                 div.innerHTML = `
                     <p style='font-weight: bold;'>${cafe.nombre}</p>
-                    <p>Horario: ${cafe.horario.split('\n')[0] || 'No disponible'}
-                        <button class='icon-button' onclick='toggleHorario(this)'>
-                            <span class='material-icons'>event</span>
-                        </button>
-                    </p>
+                    <div class='horario-container' onclick='toggleHorario(this)'>
+                        <span class="material-icons">calendar_today</span>
+                        <p>Horario: ${cafe.horario.split('\n')[0] || 'No disponible'}</p>
+                    </div>
                     <div class='horario-completo'>${cafe.horario.replace(/\n/g, '<br>')}</div>
-                    <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer'>Ver en el mapa</a>
+                    <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer' class='mapa-button'>
+                        <span class="material-icons">place</span> Ver en el mapa
+                    </a>
                 `;
                 contenedor.appendChild(div);
             });
         }
 
-        function toggleHorario(button) {
-            const horarioDiv = button.parentElement.nextElementSibling;
+        function toggleHorario(container) {
+            const horarioDiv = container.nextElementSibling;
             horarioDiv.classList.toggle('mostrar');
         }
         
