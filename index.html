@@ -163,7 +163,7 @@
                     <p style='font-weight: bold;'>${cafe.nombre}</p>
                     <div class='horario-container' onclick='toggleHorario(this)'>
                         <span class="material-icons">calendar_today</span>
-                        <p>Horario: ${cafe.horario.split('\n')[0] || 'No disponible'}</p>
+                        <p>- ${cafe.horario.split('\n')[0] || 'No disponible'}</p>
                     </div>
                     <div class='horario-completo'>${cafe.horario.replace(/\n/g, '<br>')}</div>
                     <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer' class='mapa-button'>
