@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Cafeterías</title>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
- <style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #252627;
             color: white;
         }
-        
         h1 {
             color: white;
             text-align: center;
-            text-transform:uppercase;
+            text-transform: uppercase;
             margin: 5px;
         }
         .cafe {
@@ -24,6 +24,7 @@
             padding: 15px;
             margin: 10px 0;
             border-radius: 10px;
+            overflow: hidden;
         }
         .open {
             background-color: #9edda1;
@@ -34,29 +35,34 @@
         a {
             color: black;
         }
-        .debug {
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 12px;
-            background: #eee;
-            text-align: left;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: black;
+            margin-left: 10px;
+            vertical-align: middle;
         }
-    p {
-            font-size: 18px;
-            margin: 10px 0;
+        .horario-completo {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+            margin-top: 10px;
+            font-size: 16px;
         }
-        </style>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        .horario-completo.mostrar {
+            max-height: 500px;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <span class="material-icons" style="display: block; text-align: center; font-size: 48px;">coffee_maker</span>
         <h1>Lista de Cafeterías</h1>
         <div id="cafeterias"></div>
-        
     </div>
 
     <script>
@@ -64,73 +70,72 @@
             try {
                 const url = "https://docs.google.com/spreadsheets/d/1N6f0Ex64tbJwiDC5Pjz2Ue6LUXJB8-lpatkvK_2nCug/gviz/tq?tqx=out:json";
                 const response = await fetch(url);
+                if (!response.ok) throw new Error("Error en la respuesta del servidor");
                 const text = await response.text();
-                
-                
                 if (!text.startsWith("/*")) throw new Error("Formato inesperado");
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 
                 let cafeterias = [];
-                for (let i = 0; i < json.table.rows.length; i++) { // Solo tomar las dos primeras cafeterías
-                    if (!json.table.rows[i]) break;
-                    const nombre = json.table.rows[i].c[0]?.v || "";
-                    const enlace = json.table.rows[i].c[1]?.v || "#";
-                    const horario = json.table.rows[i].c[2]?.v || "";
+                json.table.rows.forEach(row => {
+                    const nombre = row.c[0]?.v || "";
+                    const enlace = row.c[1]?.v || "#";
+                    const horario = row.c[2]?.v || "";
                     
                     if (nombre) {
                         cafeterias.push({ nombre, enlace, horario });
                     }
-                }
-                
+                });
                 
                 mostrarCafeterias(cafeterias);
             } catch (error) {
-                
+                console.error("Error al cargar los datos:", error);
+                document.getElementById("cafeterias").innerHTML = "<p style='color: red; text-align: center;'>Error al cargar los datos. Inténtelo de nuevo más tarde.</p>";
             }
-        }
-
-        function obtenerHorarioDia(horarioTexto) {
-            const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-            const hoy = new Date().getDay();
-            const diaActual = diasSemana[hoy];
-            
-            const lineas = horarioTexto.split("\n");
-            for (let linea of lineas) {
-                if (linea.toLowerCase().startsWith(diaActual)) {
-                    return linea.split(" ")[1]; // Extrae el horario (ej: "8:30–18:00")
-                }
-            }
-            return null;
         }
 
         function mostrarCafeterias(cafeterias) {
             const ahora = new Date();
-            const horaLocal = ahora.getHours() * 60 + ahora.getMinutes();
+            const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
+            const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
             
             const contenedor = document.getElementById("cafeterias");
             contenedor.innerHTML = "";
             
             cafeterias.forEach(cafe => {
-                const horarioHoy = obtenerHorarioDia(cafe.horario);
-                let estadoClase = "closed";
-                
+                let estadoClase = 'closed';
+                const lineasHorario = cafe.horario.split('\n');
+                let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaSemana));
+
                 if (horarioHoy) {
-                    const horarioPartes = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
-                    if (horarioPartes) {
-                        const horaApertura = parseInt(horarioPartes[1]) * 60 + parseInt(horarioPartes[2]);
-                        const horaCierre = parseInt(horarioPartes[3]) * 60 + parseInt(horarioPartes[4]);
-                        
-                        if (horaLocal >= horaApertura && horaLocal < horaCierre) {
-                            estadoClase = "open";
+                    const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
+                    if (horarioMatch) {
+                        const horaApertura = parseInt(horarioMatch[1]) * 60 + parseInt(horarioMatch[2]);
+                        const horaCierre = parseInt(horarioMatch[3]) * 60 + parseInt(horarioMatch[4]);
+                        if (horaActual >= horaApertura && horaActual < horaCierre) {
+                            estadoClase = 'open';
                         }
                     }
                 }
-                
+
                 const div = document.createElement("div");
                 div.className = `cafe ${estadoClase}`;
-                div.innerHTML = `<p style='font-weight: bold;'>${cafe.nombre}</p><p>Horario: ${horarioHoy || 'No disponible'}</p><a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer'>Ver en el mapa</a>`;
+                div.innerHTML = `
+                    <p style='font-weight: bold;'>${cafe.nombre}</p>
+                    <p>Horario: ${cafe.horario.split('\n')[0] || 'No disponible'}
+                        <button class='icon-button' onclick='toggleHorario(this)'>
+                            <span class='material-icons'>event</span>
+                        </button>
+                    </p>
+                    <div class='horario-completo'>${cafe.horario.replace(/\n/g, '<br>')}</div>
+                    <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer'>Ver en el mapa</a>
+                `;
                 contenedor.appendChild(div);
             });
+        }
+
+        function toggleHorario(button) {
+            const horarioDiv = button.parentElement.nextElementSibling;
+            horarioDiv.classList.toggle('mostrar');
         }
         
         cargarDatos();
