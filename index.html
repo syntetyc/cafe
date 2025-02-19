@@ -32,19 +32,6 @@
         .closed {
             background-color: #fac9be;
         }
-        a {
-            color: black;
-            text-decoration: none;
-        }
-        .icon-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 24px;
-            color: black;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
         .horario-container {
             justify-content: center;
             background: rgba(255, 255, 255, 0.2);
@@ -52,7 +39,6 @@
             border-radius: 20px;
             display: inline-flex;
             align-items: center;
-            margin-top: 0px;
             cursor: pointer;
             height: 35px;
             width: 90%;
@@ -65,7 +51,6 @@
             overflow: hidden;
             transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
             opacity: 0;
-            margin-top: 5px; /* Distancia más pequeña entre los botones */
             font-size: 16px;
             background: rgba(255, 255, 255, 0.2);
             padding: 3px 10px;
@@ -82,19 +67,16 @@
             width: 86%;
             background: none;
             border: 2px solid rgba(255, 255, 255, 0.2);
-            color: black; /* Color del texto y el icono a negro */
+            color: black;
             padding: 8px 15px;
             border-radius: 100px;
             font-size: 16px;
             cursor: pointer;
-            margin-top: 3px; /* Ajuste de distancia más pequeña entre los botones */
             height: 25px;
+            text-decoration: none;
         }
         .mapa-button .material-icons {
             margin-right: 10px;
-        }
-        .mapa-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
@@ -136,7 +118,6 @@
         function mostrarCafeterias(cafeterias) {
             const ahora = new Date();
             const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
-            const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
             
             const contenedor = document.getElementById("cafeterias");
             contenedor.innerHTML = "";
@@ -146,11 +127,17 @@
                 const lineasHorario = cafe.horario.split('\n');
                 let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaSemana));
 
+                let horarioTexto = "Horario no disponible";
+                
                 if (horarioHoy) {
                     const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
                     if (horarioMatch) {
+                        horarioTexto = `${horarioMatch[1]}:${horarioMatch[2]} - ${horarioMatch[3]}:${horarioMatch[4]}`;
+                        
                         const horaApertura = parseInt(horarioMatch[1]) * 60 + parseInt(horarioMatch[2]);
                         const horaCierre = parseInt(horarioMatch[3]) * 60 + parseInt(horarioMatch[4]);
+                        const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+
                         if (horaActual >= horaApertura && horaActual < horaCierre) {
                             estadoClase = 'open';
                         }
@@ -163,7 +150,7 @@
                     <p style='font-weight: bold;'>${cafe.nombre}</p>
                     <div class='horario-container' onclick='toggleHorario(this)'>
                         <span class="material-icons">calendar_today</span>
-                        <p>- ${cafe.horario.split('\n')[0] || 'No disponible'}</p>
+                        <p>${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}: ${horarioTexto}</p>
                     </div>
                     <div class='horario-completo'>${cafe.horario.replace(/\n/g, '<br>')}</div>
                     <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer' class='mapa-button'>
