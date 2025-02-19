@@ -10,7 +10,7 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #252627;
-            color: white;
+            color: black;
         }
         h1 {
             color: white;
@@ -18,14 +18,37 @@
             text-transform: uppercase;
             margin: 5px;
         }
-        .cafe {
-            color: black;
-            text-align: center;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+        .titulo-cafe {
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: bold;
+        text-align: center;
+        transition: background 0.3s;
+        background: none; /* 🔥 Se elimina el fondo blanco transparente */
+        border: none; /* Borde sutil para parecer botón */
+        width: 90%;
+        margin: 5px auto;
+    }
+
+    .titulo-cafe:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .contenido-cafe {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    }
+
+    .cafe {
+        padding: 5px; /* 🔥 Reduce la altura general antes de desplegarse */
+        margin: 5px 0;
+        border-radius: 10px;
+        text-align: center;
+        transition: all 0.3s;
+    }
         .open {
             background-color: #9edda1;
         }
@@ -80,7 +103,7 @@
             cursor: pointer;
             height: 45px; /* Más altura */
             text-decoration: none;
-            margin: 5px auto 0;
+            margin: 0px auto 10px;
             box-sizing: border-box;
         }
         .mapa-button .material-icons {
@@ -98,95 +121,131 @@
         <div id="cafeterias"></div>
     </div>
 
-    <script>
-        async function cargarDatos() {
-            try {
-                const url = "https://docs.google.com/spreadsheets/d/1N6f0Ex64tbJwiDC5Pjz2Ue6LUXJB8-lpatkvK_2nCug/gviz/tq?tqx=out:json";
-                const response = await fetch(url);
-                if (!response.ok) throw new Error("Error en la respuesta del servidor");
-                const text = await response.text();
-                if (!text.startsWith("/*")) throw new Error("Formato inesperado");
-                const json = JSON.parse(text.substr(47).slice(0, -2));
-                
-                let cafeterias = [];
-                json.table.rows.forEach(row => {
-                    const nombre = row.c[0]?.v || "";
-                    const enlace = row.c[1]?.v || "#";
-                    const horario = row.c[2]?.v || "";
-                    
-                    if (nombre) {
-                        cafeterias.push({ nombre, enlace, horario });
-                    }
-                });
+<script>
+    async function cargarDatos() {
+        try {
+            const url = "https://docs.google.com/spreadsheets/d/1N6f0Ex64tbJwiDC5Pjz2Ue6LUXJB8-lpatkvK_2nCug/gviz/tq?tqx=out:json";
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Error en la respuesta del servidor");
+            const text = await response.text();
+            if (!text.startsWith("/*")) throw new Error("Formato inesperado");
+            const json = JSON.parse(text.substr(47).slice(0, -2));
 
-                mostrarCafeterias(cafeterias);
-            } catch (error) {
-                console.error("Error al cargar los datos:", error);
-                document.getElementById("cafeterias").innerHTML = "<p style='color: red; text-align: center;'>Error al cargar los datos. Inténtelo de nuevo más tarde.</p>";
-            }
-        }
+            let cafeterias = [];
+            json.table.rows.forEach(row => {
+                const nombre = row.c[0]?.v || "";
+                const enlace = row.c[1]?.v || "#";
+                const horario = row.c[2]?.v || "";
 
-        function mostrarCafeterias(cafeterias) {
-            const ahora = new Date();
-            const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
-
-            const cafeteriasProcesadas = cafeterias.map(cafe => {
-                let estadoClase = 'closed';
-                const lineasHorario = cafe.horario.split('\n');
-                let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaSemana));
-
-                let horarioTexto = "Horario no disponible";
-                let estaAbierta = false;
-
-                if (horarioHoy) {
-                    const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
-                    if (horarioMatch) {
-                        horarioTexto = `${horarioMatch[1]}:${horarioMatch[2]} - ${horarioMatch[3]}:${horarioMatch[4]}`;
-                        
-                        const horaApertura = parseInt(horarioMatch[1]) * 60 + parseInt(horarioMatch[2]);
-                        const horaCierre = parseInt(horarioMatch[3]) * 60 + parseInt(horarioMatch[4]);
-                        const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
-
-                        if (horaActual >= horaApertura && horaActual < horaCierre) {
-                            estadoClase = 'open';
-                            estaAbierta = true;
-                        }
-                    }
+                if (nombre) {
+                    cafeterias.push({ nombre, enlace, horario });
                 }
-
-                return { ...cafe, estadoClase, horarioTexto, estaAbierta };
             });
 
-            // Ordenar cafeterías: abiertas primero, cerradas después
-            cafeteriasProcesadas.sort((a, b) => b.estaAbierta - a.estaAbierta);
+            mostrarCafeterias(cafeterias);
+        } catch (error) {
+            console.error("Error al cargar los datos:", error);
+            document.getElementById("cafeterias").innerHTML = "<p style='color: red; text-align: center;'>Error al cargar los datos. Inténtelo de nuevo más tarde.</p>";
+        }
+    }
 
-            const contenedor = document.getElementById("cafeterias");
-            contenedor.innerHTML = "";
+function mostrarCafeterias(cafeterias) {
+        const ahora = new Date();
+        const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
+        const diaActualLower = diaSemana.toLowerCase();
 
-            cafeteriasProcesadas.forEach(cafe => {
-                const div = document.createElement("div");
-                div.className = `cafe ${cafe.estadoClase}`;
-                div.innerHTML = `
-                    <p style='font-weight: bold;'>${cafe.nombre}</p>
+        const cafeteriasProcesadas = cafeterias.map((cafe, index) => {
+            let estadoClase = 'closed';
+            const lineasHorario = cafe.horario.split('\n');
+            let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaActualLower));
+
+            let horarioTexto = "Horario no disponible";
+            let estaAbierta = false;
+
+            if (horarioHoy) {
+                const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
+                if (horarioMatch) {
+                    horarioTexto = `${horarioMatch[1]}:${horarioMatch[2]} - ${horarioMatch[3]}:${horarioMatch[4]}`;
+
+                    const horaApertura = parseInt(horarioMatch[1]) * 60 + parseInt(horarioMatch[2]);
+                    const horaCierre = parseInt(horarioMatch[3]) * 60 + parseInt(horarioMatch[4]);
+                    const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+
+                    if (horaActual >= horaApertura && horaActual < horaCierre) {
+                        estadoClase = 'open';
+                        estaAbierta = true;
+                    }
+                }
+            }
+
+            // Resaltar el día actual en negrita dentro del horario desplegable
+            const horarioHTML = lineasHorario.map(linea => {
+                const diaLinea = linea.split(':')[0].trim().toLowerCase(); // Extraer solo el día
+                return diaLinea === diaActualLower ? `<strong>${linea}</strong>` : linea;
+            }).join('<br>');
+
+            return { ...cafe, estadoClase, horarioTexto, estaAbierta, horarioHTML, index };
+        });
+
+        // Ordenar cafeterías: abiertas primero, cerradas después
+        cafeteriasProcesadas.sort((a, b) => b.estaAbierta - a.estaAbierta);
+
+        const contenedor = document.getElementById("cafeterias");
+        contenedor.innerHTML = "";
+
+        cafeteriasProcesadas.forEach(cafe => {
+            const div = document.createElement("div");
+            div.className = `cafe ${cafe.estadoClase}`;
+            div.innerHTML = `
+                <p class="titulo-cafe" onclick='toggleCafe(${cafe.index})'>
+                    ${cafe.nombre}
+                </p>
+                <div id="contenido-${cafe.index}" class="contenido-cafe">
                     <div class='horario-container' onclick='toggleHorario(this)'>
                         <span class="material-icons">calendar_today</span>
                         <p>${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}: ${cafe.horarioTexto}</p>
                     </div>
-                    <div class='horario-completo'>${cafe.horario.replace(/\n/g, '<br>')}</div>
+                    <div class='horario-completo'>${cafe.horarioHTML}</div>
                     <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer' class='mapa-button'>
                         <span class="material-icons">place</span> Ver en el mapa
                     </a>
-                `;
-                contenedor.appendChild(div);
-            });
-        }
+                </div>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
 
-        function toggleHorario(container) {
-            const horarioDiv = container.nextElementSibling;
-            horarioDiv.classList.toggle('mostrar');
+    function toggleCafe(index) {
+        const contenido = document.getElementById(`contenido-${index}`);
+        const todosLosContenidos = document.querySelectorAll(".contenido-cafe");
+
+        todosLosContenidos.forEach(cont => {
+            if (cont !== contenido) {
+                cont.style.maxHeight = "0";
+                cont.style.overflow = "hidden";
+                cont.style.opacity = "0";
+            }
+        });
+
+        if (contenido.style.maxHeight === "0px" || !contenido.style.maxHeight) {
+            contenido.style.maxHeight = "500px";
+            contenido.style.overflow = "visible";
+            contenido.style.opacity = "1";
+        } else {
+            contenido.style.maxHeight = "0";
+            contenido.style.overflow = "hidden";
+            contenido.style.opacity = "0";
         }
-        
-        cargarDatos();
-    </script>
+    }
+
+    function toggleHorario(container) {
+        const horarioDiv = container.nextElementSibling;
+        horarioDiv.classList.toggle('mostrar');
+    }
+
+    // Cargar datos al inicio
+    cargarDatos();
+</script>
+
 </body>
 </html>
