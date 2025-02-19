@@ -35,13 +35,15 @@
         .horario-container {
             justify-content: center;
             background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
+            padding: 10px 15px; /* Aumento de padding */
             border-radius: 20px;
             display: inline-flex;
             align-items: center;
             cursor: pointer;
-            height: 35px;
+            height: 45px; /* Más altura */
             width: 90%;
+            box-sizing: border-box;
+            margin: auto;
         }
         .horario-container .material-icons {
             margin-right: 10px;
@@ -53,8 +55,12 @@
             opacity: 0;
             font-size: 16px;
             background: rgba(255, 255, 255, 0.2);
-            padding: 3px 10px;
+            padding: 5px 10px; /* Más espacio interno */
             border-radius: 10px;
+            width: 90%;
+            box-sizing: border-box;
+            margin: 5px auto 0;
+            text-align: center;
         }
         .horario-completo.mostrar {
             max-height: 500px;
@@ -64,19 +70,24 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 86%;
+            width: 90%;
             background: none;
             border: 2px solid rgba(255, 255, 255, 0.2);
             color: black;
-            padding: 8px 15px;
+            padding: 12px 20px; /* Más padding */
             border-radius: 100px;
             font-size: 16px;
             cursor: pointer;
-            height: 25px;
+            height: 45px; /* Más altura */
             text-decoration: none;
+            margin: 5px auto 0;
+            box-sizing: border-box;
         }
         .mapa-button .material-icons {
             margin-right: 10px;
+        }
+        .mapa-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
@@ -107,7 +118,7 @@
                         cafeterias.push({ nombre, enlace, horario });
                     }
                 });
-                
+
                 mostrarCafeterias(cafeterias);
             } catch (error) {
                 console.error("Error al cargar los datos:", error);
@@ -118,17 +129,15 @@
         function mostrarCafeterias(cafeterias) {
             const ahora = new Date();
             const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
-            
-            const contenedor = document.getElementById("cafeterias");
-            contenedor.innerHTML = "";
-            
-            cafeterias.forEach(cafe => {
+
+            const cafeteriasProcesadas = cafeterias.map(cafe => {
                 let estadoClase = 'closed';
                 const lineasHorario = cafe.horario.split('\n');
                 let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaSemana));
 
                 let horarioTexto = "Horario no disponible";
-                
+                let estaAbierta = false;
+
                 if (horarioHoy) {
                     const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
                     if (horarioMatch) {
@@ -140,17 +149,28 @@
 
                         if (horaActual >= horaApertura && horaActual < horaCierre) {
                             estadoClase = 'open';
+                            estaAbierta = true;
                         }
                     }
                 }
 
+                return { ...cafe, estadoClase, horarioTexto, estaAbierta };
+            });
+
+            // Ordenar cafeterías: abiertas primero, cerradas después
+            cafeteriasProcesadas.sort((a, b) => b.estaAbierta - a.estaAbierta);
+
+            const contenedor = document.getElementById("cafeterias");
+            contenedor.innerHTML = "";
+
+            cafeteriasProcesadas.forEach(cafe => {
                 const div = document.createElement("div");
-                div.className = `cafe ${estadoClase}`;
+                div.className = `cafe ${cafe.estadoClase}`;
                 div.innerHTML = `
                     <p style='font-weight: bold;'>${cafe.nombre}</p>
                     <div class='horario-container' onclick='toggleHorario(this)'>
                         <span class="material-icons">calendar_today</span>
-                        <p>${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}: ${horarioTexto}</p>
+                        <p>${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}: ${cafe.horarioTexto}</p>
                     </div>
                     <div class='horario-completo'>${cafe.horario.replace(/\n/g, '<br>')}</div>
                     <a href='${cafe.enlace}' target='_blank' rel='noopener noreferrer' class='mapa-button'>
