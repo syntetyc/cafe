@@ -1,202 +1,286 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Cafeterías</title>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #252627;
-            color: black;
-        }
-        h1 {
-            color: white;
-            text-align: center;
-            text-transform: uppercase;
-            margin: 5px;
-        }
-        .titulo-cafe {
-        cursor: pointer;
-        padding: 10px;
-        border-radius: 10px;
-        font-weight: bold;
-        text-align: center;
-        transition: background 0.3s;
-        background: none; /* 🔥 Se elimina el fondo blanco transparente */
-        border: none; /* Borde sutil para parecer botón */
-        width: 90%;
-        margin: 5px auto;
-    }
 
-    .titulo-cafe:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-    .contenido-cafe {
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-    }
-
-    .cafe {
-        padding: 5px; /* 🔥 Reduce la altura general antes de desplegarse */
-        margin: 5px 0;
-        border-radius: 10px;
-        text-align: center;
-        transition: all 0.3s;
-    }
-        .open {
-            background-color: #9edda1;
-        }
-        .closed {
-            background-color: #fac9be;
-        }
-        .horario-container {
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 15px; /* Aumento de padding */
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            height: 45px; /* Más altura */
-            width: 90%;
-            box-sizing: border-box;
-            margin: auto;
-        }
-        .horario-container .material-icons {
-            margin-right: 10px;
-        }
-        .horario-completo {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-            opacity: 0;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px; /* Más espacio interno */
-            border-radius: 10px;
-            width: 90%;
-            box-sizing: border-box;
-            margin: 5px auto 0;
-            text-align: center;
-        }
-        .horario-completo.mostrar {
-            max-height: 500px;
-            opacity: 1;
-        }
-        .mapa-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 90%;
-            background: none;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            color: black;
-            padding: 12px 20px; /* Más padding */
-            border-radius: 100px;
-            font-size: 16px;
-            cursor: pointer;
-            height: 45px; /* Más altura */
-            text-decoration: none;
-            margin: 0px auto 10px;
-            box-sizing: border-box;
-        }
-
-        .mapa-button .material-icons {
-            margin-right: 10px;
-        }
-        .mapa-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <span class="material-icons" style="display: block; color: white; text-align: center; font-size: 48px;">coffee_maker</span>
-        <h1>Lista de Cafeterías</h1>
-        <div id="cafeterias"></div>
-    </div>
-
-<script>
-    async function cargarDatos() {
-        try {
-            const url = "https://docs.google.com/spreadsheets/d/1N6f0Ex64tbJwiDC5Pjz2Ue6LUXJB8-lpatkvK_2nCug/gviz/tq?tqx=out:json";
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("Error en la respuesta del servidor");
-            const text = await response.text();
-            if (!text.startsWith("/*")) throw new Error("Formato inesperado");
-            const json = JSON.parse(text.substr(47).slice(0, -2));
-
-            let cafeterias = [];
-            json.table.rows.forEach(row => {
-                const nombre = row.c[0]?.v || "";
-                const enlace = row.c[1]?.v || "#";
-                const horario = row.c[2]?.v || "";
-
-                if (nombre) {
-                    cafeterias.push({ nombre, enlace, horario });
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>barcelona.cafe | Cafeterías de especialidad en Barcelona</title>
+        <meta name="application-name" content="barcelona.cafe">
+        <meta name="author" content="barcelona.cafe">
+        <meta name="publisher" content="barcelona.cafe">
+        <meta name="description"
+            content="Lista curada de cafeterías de especialidad en Barcelona: specialty coffee, espresso y filtro, horarios y ubicación en mapa. Selección local en barcelona.cafe.">
+        <meta name="keywords"
+            content="cafeterías de especialidad Barcelona,café de especialidad Barcelona,specialty coffee Barcelona,third wave coffee Barcelona,mejores cafeterías Barcelona,café filtro Barcelona,espresso Barcelona,coffee shops Barcelona,barcelona cafe">
+        <link rel="canonical" href="https://barcelona.cafe/">
+        <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+        <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+        <meta property="og:locale" content="es_ES">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="barcelona.cafe">
+        <meta property="og:title" content="barcelona.cafe | Cafeterías de especialidad en Barcelona">
+        <meta property="og:description"
+            content="Lista curada de cafeterías de especialidad en Barcelona: specialty coffee, espresso y filtro, horarios y ubicación en mapa. Selección local en barcelona.cafe.">
+        <meta property="og:url" content="https://barcelona.cafe/">
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="barcelona.cafe | Cafeterías de especialidad en Barcelona">
+        <meta name="twitter:description"
+            content="Lista curada de cafeterías de especialidad en Barcelona: specialty coffee, espresso y filtro, horarios y ubicación en mapa. Selección local en barcelona.cafe.">
+        <meta name="twitter:domain" content="barcelona.cafe">
+        <meta name="theme-color" content="#252627">
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "name": "barcelona.cafe",
+                    "url": "https://barcelona.cafe/",
+                    "inLanguage": "es-ES",
+                    "description": "Lista curada de cafeterías de especialidad en Barcelona: specialty coffee, espresso y filtro, horarios y ubicación en mapa. Selección local en barcelona.cafe."
+                },
+                {
+                    "@type": "CollectionPage",
+                    "name": "Cafeterías de especialidad en Barcelona | barcelona.cafe",
+                    "url": "https://barcelona.cafe/",
+                    "inLanguage": "es-ES",
+                    "description": "Lista curada de cafeterías de especialidad en Barcelona: specialty coffee, espresso y filtro, horarios y ubicación en mapa. Selección local en barcelona.cafe.",
+                    "about": [
+                        {
+                            "@type": "Thing",
+                            "name": "Café de especialidad"
+                        },
+                        {
+                            "@type": "Place",
+                            "name": "Barcelona"
+                        }
+                    ]
                 }
-            });
-
-            mostrarCafeterias(cafeterias);
-        } catch (error) {
-            console.error("Error al cargar los datos:", error);
-            document.getElementById("cafeterias").innerHTML = "<p style='color: red; text-align: center;'>Error al cargar los datos. Inténtelo de nuevo más tarde.</p>";
+            ]
         }
-    }
+    </script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Xanh+Mono&display=swap"
+            rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Montserrat', sans-serif;
+                background-color: #252627;
+                color: black;
+            }
 
-function mostrarCafeterias(cafeterias) {
-        const ahora = new Date();
-        const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
-        const diaActualLower = diaSemana.toLowerCase();
+            h1 {
+                font-family: 'Xanh Mono', monospace;
+                font-weight: 400;
+                color: white;
+                text-align: center;
+                text-transform: uppercase;
+                margin: 5px;
+            }
 
-        const cafeteriasProcesadas = cafeterias.map((cafe, index) => {
-            let estadoClase = 'closed';
-            const lineasHorario = cafe.horario.split('\n');
-            let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaActualLower));
+            .titulo-cafe {
+                font-family: 'Xanh Mono', monospace;
+                cursor: pointer;
+                padding: 10px;
+                border-radius: 10px;
+                font-weight: 400;
+                text-align: center;
+                transition: background 0.3s;
+                background: none;
+                /* 🔥 Se elimina el fondo blanco transparente */
+                border: none;
+                /* Borde sutil para parecer botón */
+                width: 90%;
+                margin: 5px auto;
+            }
 
-            let horarioTexto = "Horario no disponible";
-            let estaAbierta = false;
+            .titulo-cafe:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
 
-            if (horarioHoy) {
-                const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
-                if (horarioMatch) {
-                    horarioTexto = `${horarioMatch[1]}:${horarioMatch[2]} - ${horarioMatch[3]}:${horarioMatch[4]}`;
+            .contenido-cafe {
+                max-height: 0;
+                overflow: hidden;
+                opacity: 0;
+                transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            }
 
-                    const horaApertura = parseInt(horarioMatch[1]) * 60 + parseInt(horarioMatch[2]);
-                    const horaCierre = parseInt(horarioMatch[3]) * 60 + parseInt(horarioMatch[4]);
-                    const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+            .cafe {
+                padding: 5px;
+                /* 🔥 Reduce la altura general antes de desplegarse */
+                margin: 5px 0;
+                border-radius: 10px;
+                text-align: center;
+                transition: all 0.3s;
+            }
 
-                    if (horaActual >= horaApertura && horaActual < horaCierre) {
-                        estadoClase = 'open';
-                        estaAbierta = true;
-                    }
+            .open {
+                background-color: #9edda1;
+            }
+
+            .closed {
+                background-color: #fac9be;
+            }
+
+            .horario-container {
+                justify-content: center;
+                background: rgba(255, 255, 255, 0.2);
+                padding: 10px 15px;
+                /* Aumento de padding */
+                border-radius: 20px;
+                display: inline-flex;
+                align-items: center;
+                cursor: pointer;
+                height: 45px;
+                /* Más altura */
+                width: 90%;
+                box-sizing: border-box;
+                margin: auto;
+            }
+
+            .horario-container .material-icons {
+                margin-right: 10px;
+            }
+
+            .horario-completo {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+                opacity: 0;
+                font-size: 16px;
+                background: rgba(255, 255, 255, 0.2);
+                padding: 5px 10px;
+                /* Más espacio interno */
+                border-radius: 10px;
+                width: 90%;
+                box-sizing: border-box;
+                margin: 5px auto 0;
+                text-align: center;
+            }
+
+            .horario-completo.mostrar {
+                max-height: 500px;
+                opacity: 1;
+            }
+
+            .mapa-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 90%;
+                background: none;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                color: black;
+                padding: 12px 20px;
+                /* Más padding */
+                border-radius: 100px;
+                font-size: 16px;
+                cursor: pointer;
+                height: 45px;
+                /* Más altura */
+                text-decoration: none;
+                margin: 0px auto 10px;
+                box-sizing: border-box;
+            }
+
+            .mapa-button .material-icons {
+                margin-right: 10px;
+            }
+
+            .mapa-button:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <span class="material-icons"
+                style="display: block; color: white; text-align: center; font-size: 48px;">coffee_maker</span>
+            <h1>Lista de Cafeterías</h1>
+            <div id="cafeterias"></div>
+        </div>
+
+        <script>
+            async function cargarDatos() {
+                try {
+                    const url = "https://docs.google.com/spreadsheets/d/1N6f0Ex64tbJwiDC5Pjz2Ue6LUXJB8-lpatkvK_2nCug/gviz/tq?tqx=out:json";
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error("Error en la respuesta del servidor");
+                    const text = await response.text();
+                    if (!text.startsWith("/*")) throw new Error("Formato inesperado");
+                    const json = JSON.parse(text.substr(47).slice(0, -2));
+
+                    let cafeterias = [];
+                    json.table.rows.forEach(row => {
+                        const nombre = row.c[0]?.v || "";
+                        const enlace = row.c[1]?.v || "#";
+                        const horario = row.c[2]?.v || "";
+
+                        if (nombre) {
+                            cafeterias.push({ nombre, enlace, horario });
+                        }
+                    });
+
+                    mostrarCafeterias(cafeterias);
+                } catch (error) {
+                    console.error("Error al cargar los datos:", error);
+                    document.getElementById("cafeterias").innerHTML = "<p style='color: red; text-align: center;'>Error al cargar los datos. Inténtelo de nuevo más tarde.</p>";
                 }
             }
 
-            // Resaltar el día actual en negrita dentro del horario desplegable
-            const horarioHTML = lineasHorario.map(linea => {
-                const diaLinea = linea.split(':')[0].trim().toLowerCase(); // Extraer solo el día
-                return diaLinea === diaActualLower ? `<strong>${linea}</strong>` : linea;
-            }).join('<br>');
+            function mostrarCafeterias(cafeterias) {
+                const ahora = new Date();
+                const diaSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][ahora.getDay()];
+                const diaActualLower = diaSemana.toLowerCase();
 
-            return { ...cafe, estadoClase, horarioTexto, estaAbierta, horarioHTML, index };
-        });
+                const cafeteriasProcesadas = cafeterias.map((cafe, index) => {
+                    let estadoClase = 'closed';
+                    const lineasHorario = cafe.horario.split('\n');
+                    let horarioHoy = lineasHorario.find(linea => linea.toLowerCase().startsWith(diaActualLower));
 
-        // Ordenar cafeterías: abiertas primero, cerradas después
-        cafeteriasProcesadas.sort((a, b) => b.estaAbierta - a.estaAbierta);
+                    let horarioTexto = "Horario no disponible";
+                    let estaAbierta = false;
 
-        const contenedor = document.getElementById("cafeterias");
-        contenedor.innerHTML = "";
+                    if (horarioHoy) {
+                        const horarioMatch = horarioHoy.match(/(\d{1,2}):(\d{2})–(\d{1,2}):(\d{2})/);
+                        if (horarioMatch) {
+                            horarioTexto = `${horarioMatch[1]}:${horarioMatch[2]} - ${horarioMatch[3]}:${horarioMatch[4]}`;
 
-        cafeteriasProcesadas.forEach(cafe => {
-            const div = document.createElement("div");
-            div.className = `cafe ${cafe.estadoClase}`;
-            div.innerHTML = `
+                            const horaApertura = parseInt(horarioMatch[1]) * 60 + parseInt(horarioMatch[2]);
+                            const horaCierre = parseInt(horarioMatch[3]) * 60 + parseInt(horarioMatch[4]);
+                            const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+
+                            if (horaActual >= horaApertura && horaActual < horaCierre) {
+                                estadoClase = 'open';
+                                estaAbierta = true;
+                            }
+                        }
+                    }
+
+                    // Resaltar el día actual en negrita dentro del horario desplegable
+                    const horarioHTML = lineasHorario.map(linea => {
+                        const diaLinea = linea.split(':')[0].trim().toLowerCase(); // Extraer solo el día
+                        return diaLinea === diaActualLower ? `<strong>${linea}</strong>` : linea;
+                    }).join('<br>');
+
+                    return { ...cafe, estadoClase, horarioTexto, estaAbierta, horarioHTML, index };
+                });
+
+                // Ordenar cafeterías: abiertas primero, cerradas después
+                cafeteriasProcesadas.sort((a, b) => b.estaAbierta - a.estaAbierta);
+
+                const contenedor = document.getElementById("cafeterias");
+                contenedor.innerHTML = "";
+
+                cafeteriasProcesadas.forEach(cafe => {
+                    const div = document.createElement("div");
+                    div.className = `cafe ${cafe.estadoClase}`;
+                    div.innerHTML = `
                 <p class="titulo-cafe" onclick='toggleCafe(${cafe.index})'>
                     ${cafe.nombre}
                 </p>
@@ -211,41 +295,42 @@ function mostrarCafeterias(cafeterias) {
                     </a>
                 </div>
             `;
-            contenedor.appendChild(div);
-        });
-    }
-
-    function toggleCafe(index) {
-        const contenido = document.getElementById(`contenido-${index}`);
-        const todosLosContenidos = document.querySelectorAll(".contenido-cafe");
-
-        todosLosContenidos.forEach(cont => {
-            if (cont !== contenido) {
-                cont.style.maxHeight = "0";
-                cont.style.overflow = "hidden";
-                cont.style.opacity = "0";
+                    contenedor.appendChild(div);
+                });
             }
-        });
 
-        if (contenido.style.maxHeight === "0px" || !contenido.style.maxHeight) {
-            contenido.style.maxHeight = "500px";
-            contenido.style.overflow = "visible";
-            contenido.style.opacity = "1";
-        } else {
-            contenido.style.maxHeight = "0";
-            contenido.style.overflow = "hidden";
-            contenido.style.opacity = "0";
-        }
-    }
+            function toggleCafe(index) {
+                const contenido = document.getElementById(`contenido-${index}`);
+                const todosLosContenidos = document.querySelectorAll(".contenido-cafe");
 
-    function toggleHorario(container) {
-        const horarioDiv = container.nextElementSibling;
-        horarioDiv.classList.toggle('mostrar');
-    }
+                todosLosContenidos.forEach(cont => {
+                    if (cont !== contenido) {
+                        cont.style.maxHeight = "0";
+                        cont.style.overflow = "hidden";
+                        cont.style.opacity = "0";
+                    }
+                });
 
-    // Cargar datos al inicio
-    cargarDatos();
-</script>
+                if (contenido.style.maxHeight === "0px" || !contenido.style.maxHeight) {
+                    contenido.style.maxHeight = "500px";
+                    contenido.style.overflow = "visible";
+                    contenido.style.opacity = "1";
+                } else {
+                    contenido.style.maxHeight = "0";
+                    contenido.style.overflow = "hidden";
+                    contenido.style.opacity = "0";
+                }
+            }
 
-</body>
+            function toggleHorario(container) {
+                const horarioDiv = container.nextElementSibling;
+                horarioDiv.classList.toggle('mostrar');
+            }
+
+            // Cargar datos al inicio
+            cargarDatos();
+        </script>
+
+    </body>
+
 </html>
